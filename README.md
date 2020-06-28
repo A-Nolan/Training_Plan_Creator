@@ -1,2 +1,10 @@
 # Training_Plan_Creator
-This project will automatically generate a weekly Training Plan for my restaurant
+
+Every week I spend roughly two hours creating a Training Plan for my restaurant.
+
+The object of the project is to help automate this process and cut it down into only a couple of minutes.
+
+## Tasks
+
+- [ ] Task 1
+
