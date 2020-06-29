@@ -21,6 +21,3 @@ The object of the project is to help automate this process and cut it down into 
 ## Issues
 
 **None**
-
-
-
