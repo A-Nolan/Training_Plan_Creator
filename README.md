@@ -6,7 +6,7 @@ The object of the project is to help automate this process and cut it down into 
 
 ## Tasks
 
-- [ ] Scrape schedule data from MySchedule and save it into an Excel file `schedule.xlsx`
+- [x] Scrape schedule data from MySchedule and save it into an Excel file `schedule.xlsx`
 - [ ] Check which employees need training this week from `Training Plan.xlsx`
     - [ ] Prioritise `Hygiene & Food Safety` and `Health & Safety` SOCs
     - [ ] Prioritise employees who have completed the least amount of SOCs
