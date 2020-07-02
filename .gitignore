@@ -1,5 +1,7 @@
 # Specific Files that contain personal data
 schedule.xlsx
+Suggested_SOCs.xlsx
+training_planner.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
