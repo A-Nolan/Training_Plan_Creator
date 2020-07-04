@@ -30,6 +30,19 @@ CREW_TRAINERS = [
     'Raphael Vieira'
 ]
 
+NOT_RETURNED = [
+    'Michelle Buchanan Culava Toma',
+    'Dylan Clear',
+    'James Haughton Kellett',
+    'Filip Michalski',
+    'Catherine Murphy',
+    'Sofia Rooney',
+    'Jadwiga Sosnowska',
+    'Tomasz Stefaniak',
+    'William Swayne',
+    'Monika Sykta'
+]
+
 # METHODS TO CREATE A .XLSX FROM MYSCHEDULE
 def schedule_to_excel():
     #input users id and password
@@ -39,6 +52,9 @@ def schedule_to_excel():
 
     driver = open_schedule(user, password, week_num)
     schedule_td = driver.find_elements_by_css_selector('#gridbox > table > tbody > tr:nth-child(2) > td > div > div > table > tbody > tr > td')
+
+    print('schedule.xlsx building ....')
+
     index = 0
 
     wb = Workbook()
@@ -60,10 +76,11 @@ def schedule_to_excel():
     wb2 = Workbook()
     wb2.create_sheet('Crew Members')
     wb2.create_sheet('Crew Trainers')
+    wb2.create_sheet('Managers')
+    wb2.create_sheet('Not Returned')
     ws = wb2.active
     wb2.remove(ws)
     wb2.save('training_planner.xlsx')
-    print('training_planner.xlsx created successfully')
 
 def open_schedule(user, password, week_num):
 
@@ -91,29 +108,6 @@ def rearrange_name(name):
     name_l.insert(0, name_l.pop())
     return ' '.join(name_l)
 
-# METHOD TO CREATE TRAINING PLANNER FILE
-def schedule_to_planner():
-    schedule_wb = load_workbook('schedule.xlsx')
-    planner_wb = load_workbook('training_planner.xlsx')
-
-    schedule_ws = schedule_wb.active
-    cm_planner_ws = planner_wb.get_sheet_by_name('Crew Members')
-    ct_planner_ws = planner_wb.get_sheet_by_name('Crew Trainers')
-
-    info = []
-
-    for row in schedule_ws.iter_rows(values_only=True):
-        info.append([row[0].strip(), row[4].strip(), row[5].strip(), row[6].strip(), row[7].strip(), row[8].strip(), row[9].strip(), row[10].strip()])
-
-    for i in enumerate(info, start=1):
-        for i2 in enumerate(info[i], start=1):
-            
-            if info[i-1][i2-1][0].isnumeric():
-                pass
-    
-
-
-# METHODS TO HELP READ IN SOC INFORMATION FROM SUGGESTED_SOCS.XLSX
 def add_suggested_socs():
     sugg_soc_wb = load_workbook('Suggested_SOCs.xlsx')
     schedule_wb = load_workbook('schedule.xlsx')
@@ -125,8 +119,6 @@ def add_suggested_socs():
 
     for row in sugg_soc_ws.iter_rows(min_col=2, max_col=5, min_row=2, values_only=True):
         soc_dict[row[0]] = [row[1], row[2], row[3]]
-        #print(row)
-    print(soc_dict)
 
     for index, row in enumerate(schedule_ws.iter_rows(values_only=True), start=1):
         if row[0] in soc_dict.keys():
@@ -134,10 +126,74 @@ def add_suggested_socs():
             schedule_ws.cell(row=index, column=13).value = soc_dict[row[0]][1]
             schedule_ws.cell(row=index, column=14).value = soc_dict[row[0]][2]
 
-    #schedule_ws.cell(row=1, column=12).value = soc_dict[row[0]][0]
     schedule_wb.save('schedule.xlsx')
-    
 
-#schedule_to_excel()
-#add_suggested_socs()
-schedule_to_planner()
+# METHODS TO CREATE TRAINING_PLANNER.XLSX
+def schedule_to_planner():
+    print('training_planner.xlsx building ....')
+
+    schedule_wb = load_workbook('schedule.xlsx')
+    planner_wb = load_workbook('training_planner.xlsx')
+
+    schedule_ws = schedule_wb.active
+    cm_planner_ws = planner_wb['Crew Members']
+    ct_planner_ws = planner_wb['Crew Trainers']
+    man_planner_ws = planner_wb['Managers']
+    nr_planner_ws = planner_wb['Not Returned']
+
+    for row in schedule_ws.iter_rows(values_only=True):
+        if row[0] in NOT_RETURNED:
+            nr_planner_ws.append([row[0], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13]])
+        elif row[0] in CREW_TRAINERS:
+            ct_planner_ws.append([row[0], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13]])
+        elif row[0] in MANAGERS:
+            man_planner_ws.append([row[0], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13]])
+        else:
+            cm_planner_ws.append([row[0], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13]])
+
+    complete_worksheet(cm_planner_ws)
+    complete_worksheet(ct_planner_ws)
+    complete_worksheet(man_planner_ws)
+    add_soc_count(cm_planner_ws)
+
+    planner_wb.save('training_planner.xlsx')
+    print('training_planner.xlsx created successfully')
+
+def complete_worksheet(ws):
+    for row in ws.iter_rows(min_col=2, max_col=8):
+        for cell in row:
+            if cell.value == None or not cell.value[0].isnumeric():
+                cell.value = None
+            else:
+                cell.value = cell.value[:2] + cell.value[3:5]
+                cell.value = int(cell.value)
+
+def add_soc_count(ws):
+    training_plan_wb = load_workbook('C:\\Users\\Aaron\\OneDrive\\Work\\Learning & Development\\Training Plan.xlsx')
+    training_plan_ws = training_plan_wb['Crew SOC Count']
+
+    count_dict = {}
+
+    for row in training_plan_ws.iter_rows(min_row=2, max_col=2, values_only=True):
+        if row[0] not in CREW_TRAINERS and row[0] not in MANAGERS and row[0] not in NOT_RETURNED and row[0] != None:
+            count_dict[row[0]] = row[1]
+
+    for index, row in enumerate(ws.iter_rows(), start=1):
+        ws.cell(index, 12).value = count_dict[row[0].value]
+
+# METHODS TO CREATE THE TRAINING PLAN
+def create_training_plan():
+    training_planner_wb = load_workbook('training_planner.xlsx')
+    training_planner_wb.create_sheet('Training Plan')
+
+    cm_ws = training_planner_wb['Crew Members']
+    tp_ws = training_planner_wb['Training Plan']
+
+# schedule_to_excel()
+# add_suggested_socs()
+# schedule_to_planner()
+create_training_plan()
+
+# test_wb = load_workbook('training_planner.xlsx')
+# test_ws = test_wb['Crew Members']
+# add_soc_count(test_ws)
