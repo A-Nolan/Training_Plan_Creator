@@ -20,4 +20,4 @@ The object of the project is to help automate this process and cut it down into 
 
 ## Issues
 
-**None**
+- Currently it's deleting the wrong column, need to fix that logic
