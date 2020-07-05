@@ -141,6 +141,8 @@ def schedule_to_planner():
     man_planner_ws = planner_wb['Managers']
     nr_planner_ws = planner_wb['Not Returned']
 
+    cm_planner_ws.append(['Name', '1', '2', '3', '4', '5', '6', '7', 'SOC 1', 'SOC 2', 'SOC 3', 'Completed SOCs'])
+
     for row in schedule_ws.iter_rows(values_only=True):
         if row[0] in NOT_RETURNED:
             nr_planner_ws.append([row[0], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13]])
@@ -179,7 +181,10 @@ def add_soc_count(ws):
             count_dict[row[0]] = row[1]
 
     for index, row in enumerate(ws.iter_rows(), start=1):
-        ws.cell(index, 12).value = count_dict[row[0].value]
+        if index == 1:
+            pass
+        else:
+            ws.cell(index, 12).value = count_dict[row[0].value]
 
 # METHODS TO CREATE THE TRAINING PLAN
 def create_training_plan():
@@ -189,11 +194,68 @@ def create_training_plan():
     cm_ws = training_planner_wb['Crew Members']
     tp_ws = training_planner_wb['Training Plan']
 
-# schedule_to_excel()
-# add_suggested_socs()
-# schedule_to_planner()
-create_training_plan()
+    # How many have been planned for the week
+    planned_socs = 0
 
-# test_wb = load_workbook('training_planner.xlsx')
-# test_ws = test_wb['Crew Members']
-# add_soc_count(test_ws)
+    # what number are we checking for completions
+    completed_socs = 0
+
+    while planned_socs < 7:
+        for index, row in enumerate(cm_ws.iter_rows(values_only=True), start=1):
+
+            max_row = cm_ws.max_row
+
+            if planned_socs > 6:
+                break
+            if row[len(row) - 1] == completed_socs:
+                day = choose_day_from_row(row)
+                if day != 0:
+                    add_to_plan(row, tp_ws, day)
+                    planned_socs += 1
+                    cm_ws.delete_rows(index, 1)
+                    cm_ws.delete_cols(day + 1, 1)
+                    break
+            if index > max_row:
+                completed_socs += 1
+        
+
+    training_planner_wb.save('training_planner.xlsx')
+
+def choose_day_from_row(row, rowidx, ws):
+    """ Return what day that person can have an SOC
+
+    :Args:
+    - `list`: `row` - List of info pulled from a row in excel
+
+    :Returns:
+    - `int` - (1-7)(Mon - Fri) or 0, No available dates
+    """
+
+    for index in range(1, len(row) - 4):
+        if row[index] == '' or row[index] == None:
+            pass
+        else:
+            return index
+
+    return 0
+
+def add_to_plan(row, ws, day):
+    days = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+    ]
+
+    ws.cell(day, 1, days[day - 1])
+    ws.cell(day, 2, row[0])
+    ws.cell(day, 4, row[8])
+    print(f'{days[day - 1]}, {row[0]}, {row[8]}')
+
+schedule_to_excel()
+add_suggested_socs()
+schedule_to_planner()
+# create_training_plan()
