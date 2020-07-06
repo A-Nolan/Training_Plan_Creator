@@ -7,17 +7,22 @@ The object of the project is to help automate this process and cut it down into 
 ## Tasks
 
 - [x] Scrape schedule data from MySchedule and save it into an Excel file `schedule.xlsx`
-- [ ] Check which employees need training this week from `Training Plan.xlsx`
+- [x] Check which employees need training this week from `Training Plan.xlsx`
     - [ ] Prioritise `Hygiene & Food Safety` and `Health & Safety` SOCs
-    - [ ] Prioritise employees who have completed the least amount of SOCs
-- [ ] Check which SOC the employee needs to do from `Suggested_SOCs.xlsx` file downloaded from PeopleStuff
+    - [x] Prioritise employees who have completed the least amount of SOCs
+- [x] Check which SOC the employee needs to do from `Suggested_SOCs.xlsx` file downloaded from PeopleStuff
     - [ ] Prioritise `Hygiene & Food Safety` and `Health & Safety` SOCs
-    - [ ] Generally take the first SOC from the list, but may change due to employee e.g CEL wouldn't work in the kitchen
+    - [x] Generally take the first SOC from the list
+        - [ ] If the first soc is `Hygiene & Food Safety` or `Health & Safety`, choose the next
+        - [ ] Set rules for CELs to not do any Kitchen related SOCs
+        - [ ] Set rules for Managers to only do certain SOCs
 
 ## Features to Add
 
-**TODO**
+- [ ] Document code
+- [ ] Comment on the more abstract pieces of code
+- [ ] Refractor many of the functions and parts of code
 
 ## Issues
 
-- Currently it's deleting the wrong column, need to fix that logic
+**None**
