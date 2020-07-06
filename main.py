@@ -192,6 +192,7 @@ def create_training_plan():
     training_planner_wb.create_sheet('Training Plan')
 
     cm_ws = training_planner_wb['Crew Members']
+    ct_ws = training_planner_wb['Crew Trainers']
     tp_ws = training_planner_wb['Training Plan']
 
     # How many have been planned for the week
@@ -208,20 +209,22 @@ def create_training_plan():
             if planned_socs > 6:
                 break
             if row[len(row) - 1] == completed_socs:
-                day = choose_day_from_row(row)
+                day = choose_day_from_row(row, cm_ws)
                 if day != 0:
                     add_to_plan(row, tp_ws, day)
                     planned_socs += 1
                     cm_ws.delete_rows(index, 1)
-                    cm_ws.delete_cols(day + 1, 1)
+                    col_to_delete = find_col_to_delete(cm_ws[1], day)
+                    cm_ws.delete_cols(col_to_delete, 1)
                     break
-            if index > max_row:
+            if index > max_row - 1:
                 completed_socs += 1
         
+    add_cts_to_plan(ct_ws, tp_ws)
 
     training_planner_wb.save('training_planner.xlsx')
 
-def choose_day_from_row(row, rowidx, ws):
+def choose_day_from_row(row, ws):
     """ Return what day that person can have an SOC
 
     :Args:
@@ -231,11 +234,11 @@ def choose_day_from_row(row, rowidx, ws):
     - `int` - (1-7)(Mon - Fri) or 0, No available dates
     """
 
-    for index in range(1, len(row) - 4):
-        if row[index] == '' or row[index] == None:
+    for index in range(2, len(row) - 3):
+        if row[index - 1] == '' or row[index - 1] == None:
             pass
         else:
-            return index
+            return int(ws.cell(1, index).value)
 
     return 0
 
@@ -250,12 +253,48 @@ def add_to_plan(row, ws, day):
         'Sunday'
     ]
 
+    # Add day to first column
     ws.cell(day, 1, days[day - 1])
+
+    # Add name to 2nd column
     ws.cell(day, 2, row[0])
-    ws.cell(day, 4, row[8])
-    print(f'{days[day - 1]}, {row[0]}, {row[8]}')
+
+    # Add SOC to 4th Column
+    ws.cell(day, 4, row[len(row) - 4])
+
+    # Add start time to 5th Column
+    for index, cell in enumerate(row):
+        if cell != None and index > 0:
+            time = row[index]
+            break
+    ws.cell(day, 5, time)
+
+    print(f'{days[day - 1]}, {row[0]}, {row[len(row) - 4]}, {time}')
+
+def find_col_to_delete(row, day):
+    for index, cell in enumerate(row):
+        if cell.value == day:
+            return index + 1
+
+def add_cts_to_plan(ct_ws, tp_ws):
+
+    closest_time = 2400
+
+    for index, ct_col in enumerate(ct_ws.iter_cols(min_col=1, max_col=8, values_only=True), 1):
+        
+        if index > 1:
+            cm_time = int(tp_ws[index - 1][4].value)
+            for index2, time in enumerate(ct_col, 1):
+                if time != None:
+                    ct_time = int(ct_ws.cell(index2, index).value)
+                    time_diff = abs(cm_time - ct_time)
+                    if time_diff < closest_time:
+                        tp_ws[index - 1][2].value = ct_ws[index2][0].value
+                        closest_time = time_diff
+
+            closest_time = 2400
 
 schedule_to_excel()
 add_suggested_socs()
 schedule_to_planner()
-# create_training_plan()
+create_training_plan()
