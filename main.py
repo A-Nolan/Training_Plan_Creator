@@ -171,7 +171,9 @@ def complete_worksheet(ws):
                 cell.value = int(cell.value)
 
 def add_soc_count(ws):
-    training_plan_wb = load_workbook('C:\\Users\\Aaron\\OneDrive\\Work\\Learning & Development\\Training Plan.xlsx')
+    # On PC C:\\Users\\Aaron\\OneDrive\\Work\\Learning & Development\\Training Plan.xlsx
+    # on Laptop C:\\Users\\Xtrem\\OneDrive\\Work\\Learning & Development\\Training Plan.xlsx
+    training_plan_wb = load_workbook('C:\\Users\\Xtrem\\OneDrive\\Work\\Learning & Development\\Training Plan.xlsx')
     training_plan_ws = training_plan_wb['Crew SOC Count']
 
     count_dict = {}
