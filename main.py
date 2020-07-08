@@ -57,8 +57,8 @@ def schedule_to_excel():
 
     index = 0
 
-    wb = Workbook()
-    ws = wb.active
+    schedule_wb = Workbook()
+    schedule_ws = schedule_wb.active
 
     for col in range(1, (int(len(schedule_td) / 11)) + 1):
         for row in range(1, 12):
@@ -66,11 +66,13 @@ def schedule_to_excel():
             if row == 1:
                 name = rearrange_name(info)
                 info = name
-            curr_cell = ws.cell(col, row)
+            curr_cell = schedule_ws.cell(col, row)
             curr_cell.value = info
             index += 1
 
-    wb.save('schedule.xlsx')
+    add_suggested_socs(schedule_ws)
+
+    schedule_wb.save('schedule.xlsx')
     print('schedule.xlsx created successfully')
 
     wb2 = Workbook()
@@ -83,6 +85,13 @@ def schedule_to_excel():
     wb2.save('training_planner.xlsx')
 
 def open_schedule(user, password, week_num):
+    """ Open Selenium Link to the schedule
+
+    :Args:
+    - `str`: `user` - Username for MySchedule
+    - `str`: `password` - Password for MySchedule
+    - `str`: `week_num` - The week number of the schedule
+    """
 
     options = Options()
     options.add_argument('headless')
@@ -103,17 +112,29 @@ def open_schedule(user, password, week_num):
     return driver
 
 def rearrange_name(name):
+    """ Remove the comma and reverse the name from MySchedule
+
+    :Args:
+    - `str`: `name` - The wrongly formatted name `Nolan, Aaron`
+
+    :Returns:
+    - `str` - The reformatted name `Aaron Nolan`
+    """
+
     name_l = name.split()
     name_l.remove(',')
     name_l.insert(0, name_l.pop())
     return ' '.join(name_l)
 
-def add_suggested_socs():
-    sugg_soc_wb = load_workbook('Suggested_SOCs.xlsx')
-    schedule_wb = load_workbook('schedule.xlsx')
+def add_suggested_socs(schedule_ws):
+    """ Add the suggested SOCs to the schedule
 
+    :Args:
+    - `openpyxl.Worksheet`: `schedule_ws` - The Schedule Worksheet
+    """
+
+    sugg_soc_wb = load_workbook('Suggested_SOCs.xlsx')
     sugg_soc_ws = sugg_soc_wb.active
-    schedule_ws = schedule_wb.active
 
     soc_dict = {}
 
@@ -125,8 +146,6 @@ def add_suggested_socs():
             schedule_ws.cell(row=index, column=12).value = soc_dict[row[0]][0]
             schedule_ws.cell(row=index, column=13).value = soc_dict[row[0]][1]
             schedule_ws.cell(row=index, column=14).value = soc_dict[row[0]][2]
-
-    schedule_wb.save('schedule.xlsx')
 
 # METHODS TO CREATE TRAINING_PLANNER.XLSX
 def schedule_to_planner():
@@ -162,6 +181,12 @@ def schedule_to_planner():
     print('training_planner.xlsx created successfully')
 
 def complete_worksheet(ws):
+    """ Formats `schedule.xlsx` into start times and blanks
+
+    :Args:
+    - `openpyxl.Worksheet`: `ws` - Schedule Worksheet
+    """
+
     for row in ws.iter_rows(min_col=2, max_col=8):
         for cell in row:
             if cell.value == None or not cell.value[0].isnumeric():
@@ -296,7 +321,15 @@ def add_cts_to_plan(ct_ws, tp_ws):
 
             closest_time = 2400
 
-schedule_to_excel()
-add_suggested_socs()
-schedule_to_planner()
-create_training_plan()
+# schedule_to_excel()
+# add_suggested_socs()
+# schedule_to_planner()
+# create_training_plan()
+
+test_wb = load_workbook('training_planner.xlsx')
+wb_to_copy = test_wb['Crew Members']
+test_wb.copy_worksheet(wb_to_copy)
+cm_foundation_ws = test_wb['Crew Members Copy']
+test_wb.move_sheet(cm_foundation_ws, -4)
+cm_foundation_ws.title = 'Crew Member Foundation'
+print(test_wb.sheetnames)
